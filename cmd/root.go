@@ -6,13 +6,14 @@ package cmd
 import (
 	"os"
 
+	"github.com/dan-kuroto/gs-cli/utils"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "gs-cli",
-	Version: "v1.1.0 Ginga Strium",
+	Version: utils.Version,
 	Short:   "gin-stronger CLI tool to generate application.",
 	Long: `gin-stronger is a library that empowers Gin.
 This application is a tool to generate the needed files
