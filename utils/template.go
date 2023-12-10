@@ -73,11 +73,43 @@ go.work
 `
 }
 
-func GetDoneMessage(projectName string) string {
+func GetDoneMessage(projectName string, isWindows bool) string {
+	var runCmd string
+	if isWindows {
+		runCmd = "script/buildrun.ps1"
+	} else {
+		runCmd = "bash script/buildrun.sh"
+	}
 	return fmt.Sprintf(`
 Done. Now run:
   cd %s
   go mod tidy
-  script/buildrun.ps1
-`, projectName)
+  %s
+`, projectName, runCmd)
+}
+
+func GetBuildRunScript(isWindows bool, projectName string) string {
+	if isWindows {
+		return fmt.Sprintf(`# build app
+go build -o target/%s.exe ./main.go ./routers.go
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+# run app
+./target/%s.exe
+`, projectName, projectName)
+	} else {
+		return fmt.Sprintf(`# build app
+go build -o target/%s main.go routers.go
+
+code=$?
+if [ $code -ne 0 ]; then
+    exit $code
+fi
+
+# run app
+target/%s
+`, projectName, projectName)
+	}
 }

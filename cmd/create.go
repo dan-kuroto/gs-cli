@@ -20,6 +20,8 @@ var createCmd = &cobra.Command{
 		projectName := utils.Input("Project name: ")
 		customConfig := utils.Input("Use custom configuration? [y/n]: ") == "y"
 
+		isWindows := utils.IsWindows()
+
 		if err := os.Mkdir(utils.GetPath(projectName), fs.ModeDir); err != nil {
 			panic(err)
 		}
@@ -27,9 +29,9 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
+		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName(isWindows, "buildrun")), utils.GetBuildRunScript(isWindows, projectName))
 
-		// TODO: 获取系统类型并生成scripts文件路径
-		fmt.Print(utils.GetDoneMessage(projectName))
+		fmt.Print(utils.GetDoneMessage(projectName, isWindows))
 	},
 }
 
