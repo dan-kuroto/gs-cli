@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 )
 
@@ -26,6 +27,12 @@ func Save(path string, data string) {
 
 	_, err = file.WriteString(data)
 	if err != nil {
+		panic(err)
+	}
+}
+
+func Mkdir(path string) {
+	if err := os.Mkdir(path, fs.ModeDir); err != nil {
 		panic(err)
 	}
 }

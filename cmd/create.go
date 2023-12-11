@@ -5,8 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
 
 	"github.com/dan-kuroto/gs-cli/utils"
 	"github.com/spf13/cobra"
@@ -20,13 +18,12 @@ var createCmd = &cobra.Command{
 		projectName := utils.Input("Project name: ")
 		customConfig := utils.Input("Use custom configuration? [y/n]: ") == "y"
 
-		if err := os.Mkdir(utils.GetPath(projectName), fs.ModeDir); err != nil {
-			panic(err)
-		}
+		utils.Mkdir(utils.GetPath(projectName))
 		utils.Save(utils.GetPath(projectName, "bannner.txt"), utils.GetBanner())
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
+		utils.Mkdir(utils.GetPath(projectName, "scripts"))
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("buildrun")), utils.GetBuildRunScript(projectName))
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("build")), utils.GetBuildScript(projectName))
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("rundev")), utils.GetRunDevScript(projectName))
@@ -36,6 +33,7 @@ var createCmd = &cobra.Command{
 		if customConfig {
 			utils.Save(utils.GetPath(projectName, "utils", "config.go"), utils.GetUtilsConfigGo(projectName))
 		}
+		utils.Mkdir(utils.GetPath(projectName, "hello"))
 		utils.Save(utils.GetPath(projectName, "hello", "handler.go"), utils.GetHelloHandlerGo(projectName))
 		utils.Save(utils.GetPath(projectName, "hello", "model.go"), utils.GetHelloModelGo(projectName))
 
