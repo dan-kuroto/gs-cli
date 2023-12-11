@@ -190,3 +190,74 @@ func main() {
 
 	return builder.String()
 }
+
+func GetRoutersGo(projectName string) string {
+	return fmt.Sprintf(`package main
+
+import (
+	"%s/hello"
+	"net/http"
+
+	"github.com/dan-kuroto/gin-stronger/gs"
+	"github.com/gin-gonic/gin"
+)
+
+func PanicStringHandler(c *gin.Context, err string) {
+	c.JSON(http.StatusInternalServerError, gin.H{"err": err})
+}
+
+func GetRouters() []gs.Router {
+	return []gs.Router{
+		{
+			Path: "/api",
+			MiddleWares: []gin.HandlerFunc{
+				gs.PackagePanicHandler(PanicStringHandler),
+			},
+			Children: []gs.Router{
+				{
+					Path:     "/hello",
+					Method:   gs.GET | gs.POST,
+					Handlers: gs.PackageHandlers(hello.HelloHandler),
+				},
+			},
+		},
+	}
+}
+`, projectName)
+}
+
+func GetUtilsConfigGo(projectName string) string {
+	return `package utils
+
+import "github.com/dan-kuroto/gin-stronger/gs"
+
+type Configuration struct {
+	gs.Configuration ` + "`" + `yaml:",inline"` + "`" + `
+	Message          string ` + "`" + `yaml:"message"` + "`" + `
+}
+
+var Config Configuration
+`
+}
+
+func GetHelloHandlerGo(projectName string) string {
+	return `package hello
+
+func HelloHandler(hello *HelloRequst) HelloResponse {
+	return HelloResponse{Message: "Hello " + hello.Name}
+}
+`
+}
+
+func GetHelloModelGo(projectName string) string {
+	return `package hello
+
+type HelloRequst struct {
+	Name string ` + "`" + `form:"name"` + "`" + `
+}
+
+type HelloResponse struct {
+	Message string ` + "`" + `json:"message"` + "`" + `
+}
+`
+}
