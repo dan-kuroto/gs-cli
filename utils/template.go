@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.1.0 Ginga Strium"
+const Version = "v1.1.1 Ginga Strium"
+const ShortVersion = "v1.1.1"
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -23,9 +24,9 @@ func GetGoMod(packageName string) string {
 go 1.21.0
 
 require (
-	github.com/dan-kuroto/gin-stronger v1.1.0
+	github.com/dan-kuroto/gin-stronger %s
 	github.com/gin-gonic/gin v1.9.1
-)`, packageName)
+)`, packageName, ShortVersion)
 }
 
 func GetApplicationYml(customConfig bool) string {
