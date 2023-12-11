@@ -9,7 +9,7 @@ import (
 func GetPath(paths ...string) string {
 	root, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		ThrowE(err)
 	}
 	paths = append([]string{root}, paths...)
 	return filepath.Join(paths...)

@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dan-kuroto/gs-cli/utils"
 	"github.com/spf13/cobra"
@@ -15,8 +16,9 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a gin-stronger application",
 	Run: func(cmd *cobra.Command, args []string) {
-		projectName := utils.Input("Project name: ")
-		customConfig := utils.Input("Use custom configuration? [y/n]: ") == "y"
+		projectName := strings.TrimSpace(utils.Input("Project name: "))
+		utils.AssertNotEmpty("project name", projectName)
+		customConfig := strings.TrimSpace(utils.Input("Use custom configuration? [y/n]: ")) == "y"
 
 		utils.Mkdir(utils.GetPath(projectName))
 		utils.Save(utils.GetPath(projectName, "banner.txt"), utils.GetBanner())
@@ -31,6 +33,7 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "main.go"), utils.GetMainGo(projectName, customConfig))
 		utils.Save(utils.GetPath(projectName, "routers.go"), utils.GetRoutersGo(projectName))
 		if customConfig {
+			utils.Mkdir(utils.GetPath(projectName, "utils"))
 			utils.Save(utils.GetPath(projectName, "utils", "config.go"), utils.GetUtilsConfigGo(projectName))
 		}
 		utils.Mkdir(utils.GetPath(projectName, "hello"))
