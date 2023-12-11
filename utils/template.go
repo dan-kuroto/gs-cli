@@ -36,7 +36,7 @@ func GetApplicationYml(customConfig bool) string {
 #   active: dev
 
 gin:
-  release: true
+  release: false
   host: 127.0.0.1
   port: 5480
 `)

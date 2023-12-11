@@ -19,7 +19,7 @@ var createCmd = &cobra.Command{
 		customConfig := utils.Input("Use custom configuration? [y/n]: ") == "y"
 
 		utils.Mkdir(utils.GetPath(projectName))
-		utils.Save(utils.GetPath(projectName, "bannner.txt"), utils.GetBanner())
+		utils.Save(utils.GetPath(projectName, "banner.txt"), utils.GetBanner())
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
