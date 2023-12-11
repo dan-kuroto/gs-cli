@@ -141,3 +141,52 @@ func GetRunReleaseScript(projectName string) string {
 		return fmt.Sprintf(`target/%s --release`, projectName)
 	}
 }
+
+func GetMainGo(projectName string, customConfig bool) string {
+	var builder strings.Builder
+
+	builder.WriteString(`package main
+
+import (
+`)
+	if customConfig {
+		builder.WriteString(fmt.Sprintf(`	"%s/utils"
+
+`, projectName))
+	}
+	builder.WriteString(`	"github.com/dan-kuroto/gin-stronger/gs"
+	"github.com/gin-gonic/gin"
+)
+
+func init() {
+	gs.PrintBanner()
+`)
+	if customConfig {
+		builder.WriteString(`	gs.InitConfig(&utils.Config)
+	if utils.Config.Gin.Release {
+`)
+	} else {
+		builder.WriteString(`	gs.InitConfigDefault()
+	if gs.Config.Gin.Release {
+`)
+	}
+	builder.WriteString(`		gin.SetMode(gin.ReleaseMode)
+	}
+}
+
+func main() {
+	engine := gin.Default()
+	gs.UseRouters(engine, GetRouters())
+`)
+	if customConfig {
+		builder.WriteString(`	engine.Run(utils.Config.GetGinAddr())
+}
+`)
+	} else {
+		builder.WriteString(`	engine.Run(gs.Config.GetGinAddr())
+}
+`)
+	}
+
+	return builder.String()
+}
