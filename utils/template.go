@@ -73,9 +73,9 @@ go.work
 `
 }
 
-func GetDoneMessage(projectName string, isWindows bool) string {
+func GetDoneMessage(projectName string) string {
 	var runCmd string
-	if isWindows {
+	if IsWindows() {
 		runCmd = "script/buildrun.ps1"
 	} else {
 		runCmd = "bash script/buildrun.sh"
@@ -88,8 +88,8 @@ Done. Now run:
 `, projectName, runCmd)
 }
 
-func GetBuildRunScript(isWindows bool, projectName string) string {
-	if isWindows {
+func GetBuildRunScript(projectName string) string {
+	if IsWindows() {
 		return fmt.Sprintf(`# build app
 go build -o target/%s.exe ./main.go ./routers.go
 if ($LASTEXITCODE -ne 0) {
@@ -111,5 +111,33 @@ fi
 # run app
 target/%s
 `, projectName, projectName)
+	}
+}
+
+func GetBuildScript(projectName string) string {
+	if IsWindows() {
+		return fmt.Sprintf(`# build app
+go build -o target/%s.exe ./main.go ./routers.go
+`, projectName)
+	} else {
+		return fmt.Sprintf(`# build app
+go build -o target/%s main.go routers.go
+`, projectName)
+	}
+}
+
+func GetRunDevScript(projectName string) string {
+	if IsWindows() {
+		return fmt.Sprintf(`./target/%s.exe`, projectName)
+	} else {
+		return fmt.Sprintf(`target/%s`, projectName)
+	}
+}
+
+func GetRunReleaseScript(projectName string) string {
+	if IsWindows() {
+		return fmt.Sprintf(`./target/%s.exe --release`, projectName)
+	} else {
+		return fmt.Sprintf(`target/%s --release`, projectName)
 	}
 }

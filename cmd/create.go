@@ -20,8 +20,6 @@ var createCmd = &cobra.Command{
 		projectName := utils.Input("Project name: ")
 		customConfig := utils.Input("Use custom configuration? [y/n]: ") == "y"
 
-		isWindows := utils.IsWindows()
-
 		if err := os.Mkdir(utils.GetPath(projectName), fs.ModeDir); err != nil {
 			panic(err)
 		}
@@ -29,9 +27,12 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName(isWindows, "buildrun")), utils.GetBuildRunScript(isWindows, projectName))
+		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("buildrun")), utils.GetBuildRunScript(projectName))
+		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("build")), utils.GetBuildScript(projectName))
+		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("rundev")), utils.GetRunDevScript(projectName))
+		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("runrelease")), utils.GetRunReleaseScript(projectName))
 
-		fmt.Print(utils.GetDoneMessage(projectName, isWindows))
+		fmt.Print(utils.GetDoneMessage(projectName))
 	},
 }
 
