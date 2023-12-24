@@ -196,7 +196,7 @@ func GetRoutersGo(projectName string) string {
 	return fmt.Sprintf(`package main
 
 import (
-	"%s/hello"
+	"%s/demo"
 	"net/http"
 
 	"github.com/dan-kuroto/gin-stronger/gs"
@@ -215,11 +215,7 @@ func GetRouters() []gs.Router {
 				gs.PackagePanicHandler(PanicStringHandler),
 			},
 			Children: []gs.Router{
-				{
-					Path:     "/hello",
-					Method:   gs.GET | gs.POST,
-					Handlers: gs.PackageHandlers(hello.HelloHandler),
-				},
+				demo.GetRouter(),
 			},
 		},
 	}
@@ -241,23 +237,47 @@ var Config Configuration
 `
 }
 
-func GetHelloHandlerGo(projectName string) string {
-	return `package hello
+func GetDemoDemoGo(projectName string) string {
+	return `package demo
 
-func HelloHandler(hello *HelloRequst) HelloResponse {
-	return HelloResponse{Message: "Hello " + hello.Name}
+import "github.com/dan-kuroto/gin-stronger/gs"
+
+type controller struct{}
+
+var Controller controller
+
+func GetRouter() gs.Router {
+	return gs.Router{
+		Path: "/demo",
+		Children: []gs.Router{
+			{
+				Path:     "/hello",
+				Method:   gs.GET | gs.POST,
+				Handlers: gs.PackageHandlers(Controller.Hello),
+			},
+		},
+	}
 }
 `
 }
 
-func GetHelloModelGo(projectName string) string {
-	return `package hello
+func GetDemoControllerGo(projectName string) string {
+	return `package demo
 
-type HelloRequst struct {
+func (*controller) Hello(demo *DemoRequst) DemoResponse {
+	return DemoResponse{Message: "Hello~" + demo.Name}
+}
+`
+}
+
+func GetDemoModelGo(projectName string) string {
+	return `package demo
+
+type DemoRequst struct {
 	Name string ` + "`" + `form:"name"` + "`" + `
 }
 
-type HelloResponse struct {
+type DemoResponse struct {
 	Message string ` + "`" + `json:"message"` + "`" + `
 }
 `
