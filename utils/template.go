@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.1.1 Ginga Strium"
-const ShortVersion = "v1.1.1"
+const Version = "v1.1.2 Ginga Strium"
+const ShortVersion = "v1.1.2"
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -177,7 +177,7 @@ func init() {
 
 func main() {
 	engine := gin.Default()
-	gs.UseRouters(engine, GetRouters())
+	gs.UseRouters(engine, GetRouter())
 `)
 	if customConfig {
 		builder.WriteString(`	engine.Run(utils.Config.GetGinAddr())
@@ -207,16 +207,14 @@ func PanicStringHandler(c *gin.Context, err string) {
 	c.JSON(http.StatusInternalServerError, gin.H{"err": err})
 }
 
-func GetRouters() []gs.Router {
-	return []gs.Router{
-		{
-			Path: "/api",
-			MiddleWares: []gin.HandlerFunc{
-				gs.PackagePanicHandler(PanicStringHandler),
-			},
-			Children: []gs.Router{
-				demo.GetRouter(),
-			},
+func GetRouter() gs.Router {
+	return gs.Router{
+		Path: "/api",
+		MiddleWares: []gin.HandlerFunc{
+			gs.PackagePanicHandler(PanicStringHandler),
+		},
+		Children: []gs.Router{
+			demo.GetRouter(),
 		},
 	}
 }
