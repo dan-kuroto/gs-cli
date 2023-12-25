@@ -38,7 +38,7 @@ var createCmd = &cobra.Command{
 		}
 		utils.Mkdir(utils.GetPath(projectName, "demo"))
 		utils.Save(utils.GetPath(projectName, "demo", "demo.go"), utils.GetDemoDemoGo(projectName))
-		utils.Save(utils.GetPath(projectName, "demo", "handler.go"), utils.GetDemoControllerGo(projectName))
+		utils.Save(utils.GetPath(projectName, "demo", "controller.go"), utils.GetDemoControllerGo(projectName))
 		utils.Save(utils.GetPath(projectName, "demo", "model.go"), utils.GetDemoModelGo(projectName))
 
 		fmt.Print(utils.GetDoneMessage(projectName))
