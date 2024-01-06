@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.1.2 Ginga Strium"
-const ShortVersion = "v1.1.2"
+const Version = "v1.2.0 Victory"
+const ShortVersion = "v1.2.0"
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -45,6 +45,10 @@ gin:
 message: hello world
 `)
 	}
+	builder.WriteString(`
+snow-flake:
+  start-stmp: 1626779686000
+`)
 
 	return builder.String()
 }
