@@ -92,17 +92,17 @@ Done. Now run:
 func GetBuildRunScript(projectName string) string {
 	if IsWindows() {
 		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./main.go ./routers.go
+go build -o target/%s.exe ./%s.go ./routers.go
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 # run app
 ./target/%s.exe
-`, projectName, projectName)
+`, projectName, projectName, projectName)
 	} else {
 		return fmt.Sprintf(`# build app
-go build -o target/%s main.go routers.go
+go build -o target/%s %s.go routers.go
 
 code=$?
 if [ $code -ne 0 ]; then
@@ -111,19 +111,19 @@ fi
 
 # run app
 target/%s
-`, projectName, projectName)
+`, projectName, projectName, projectName)
 	}
 }
 
 func GetBuildScript(projectName string) string {
 	if IsWindows() {
 		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./main.go ./routers.go
-`, projectName)
+go build -o target/%s.exe ./%s.go ./routers.go
+`, projectName, projectName)
 	} else {
 		return fmt.Sprintf(`# build app
-go build -o target/%s main.go routers.go
-`, projectName)
+go build -o target/%s %s.go routers.go
+`, projectName, projectName)
 	}
 }
 
