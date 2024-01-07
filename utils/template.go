@@ -18,7 +18,7 @@ func GetBanner() string {
 `, Version)
 }
 
-func GetGoMod(packageName string) string {
+func GetGoMod(projectName string) string {
 	return fmt.Sprintf(`module %s
 
 go 1.21.0
@@ -26,7 +26,7 @@ go 1.21.0
 require (
 	github.com/dan-kuroto/gin-stronger %s
 	github.com/gin-gonic/gin v1.9.1
-)`, packageName, ShortVersion)
+)`, projectName, ShortVersion)
 }
 
 func GetApplicationYml(customConfig bool) string {
@@ -199,19 +199,19 @@ var Config Configuration
 `
 }
 
-func GetDemoDemoGo(projectName string) string {
-	return `package demo
+func GetDemoInitGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 import "github.com/dan-kuroto/gin-stronger/gs"
 
 func init() {
 	gs.UseController(&Controller)
 }
-`
+`, packageName)
 }
 
-func GetDemoControllerGo(projectName string) string {
-	return `package demo
+func GetDemoControllerGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 import "github.com/dan-kuroto/gin-stronger/gs"
 
@@ -221,7 +221,7 @@ var Controller controller
 
 func (*controller) GetRouter() gs.Router {
 	return gs.Router{
-		Path: "/demo",
+		Path: "/%s",
 		Children: []gs.Router{
 			{
 				Path:     "/hello",
@@ -235,18 +235,18 @@ func (*controller) GetRouter() gs.Router {
 func (*controller) Hello(demo *DemoRequst) DemoResponse {
 	return DemoResponse{Message: "Hello~" + demo.Name}
 }
-`
+`, packageName, packageName)
 }
 
-func GetDemoModelGo(projectName string) string {
-	return `package demo
+func GetDemoModelGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 type DemoRequst struct {
-	Name string ` + "`" + `form:"name"` + "`" + `
+	Name string `+"`"+`form:"name"`+"`"+`
 }
 
 type DemoResponse struct {
-	Message string ` + "`" + `json:"message"` + "`" + `
+	Message string `+"`"+`json:"message"`+"`"+`
 }
-`
+`, packageName)
 }
