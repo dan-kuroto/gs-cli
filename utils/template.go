@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.2.1 Victory Knight"
-const ShortVersion = "v1.2.1"
+const Version = "v1.2.2 Victory Knight"
+const ShortVersion = "v1.2.2"
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -177,7 +177,7 @@ func main() {
 }
 `)
 	} else {
-		builder.WriteString(`	gs.RunApp(&gs.Configuration{})
+		builder.WriteString(`	gs.RunAppDefault()
 }
 `)
 	}
