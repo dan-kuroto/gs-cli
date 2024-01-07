@@ -31,7 +31,6 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("rundev")), utils.GetRunDevScript(projectName))
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("runrelease")), utils.GetRunReleaseScript(projectName))
 		utils.Save(utils.GetPath(projectName, projectName+".go"), utils.GetMainGo(projectName, customConfig))
-		utils.Save(utils.GetPath(projectName, "routers.go"), utils.GetRoutersGo(projectName))
 		if customConfig {
 			utils.Mkdir(utils.GetPath(projectName, "utils"))
 			utils.Save(utils.GetPath(projectName, "utils", "config.go"), utils.GetUtilsConfigGo(projectName))

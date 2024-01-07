@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.2.0 Victory"
-const ShortVersion = "v1.2.0"
+const Version = "v1.2.1 Victory Knight"
+const ShortVersion = "v1.2.1"
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -96,7 +96,7 @@ Done. Now run:
 func GetBuildRunScript(projectName string) string {
 	if IsWindows() {
 		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go ./routers.go
+go build -o target/%s.exe ./%s.go
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
@@ -106,7 +106,7 @@ if ($LASTEXITCODE -ne 0) {
 `, projectName, projectName, projectName)
 	} else {
 		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go routers.go
+go build -o target/%s %s.go
 
 code=$?
 if [ $code -ne 0 ]; then
@@ -122,11 +122,11 @@ target/%s
 func GetBuildScript(projectName string) string {
 	if IsWindows() {
 		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go ./routers.go
+go build -o target/%s.exe ./%s.go
 `, projectName, projectName)
 	} else {
 		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go routers.go
+go build -o target/%s %s.go
 `, projectName, projectName)
 	}
 }
@@ -150,79 +150,39 @@ func GetRunReleaseScript(projectName string) string {
 func GetMainGo(projectName string, customConfig bool) string {
 	var builder strings.Builder
 
-	builder.WriteString(`package main
+	builder.WriteString(fmt.Sprintf(`package main
 
 import (
-`)
+	_ "%s/demo"
+`, projectName))
 	if customConfig {
 		builder.WriteString(fmt.Sprintf(`	"%s/utils"
-
 `, projectName))
 	}
-	builder.WriteString(`	"github.com/dan-kuroto/gin-stronger/gs"
+	builder.WriteString(`	"net/http"
+	"github.com/dan-kuroto/gin-stronger/gs"
 	"github.com/gin-gonic/gin"
 )
 
-func init() {
-	gs.PrintBanner()
-`)
-	if customConfig {
-		builder.WriteString(`	gs.InitConfig(&utils.Config)
-	if utils.Config.Gin.Release {
-`)
-	} else {
-		builder.WriteString(`	gs.InitConfigDefault()
-	if gs.Config.Gin.Release {
-`)
-	}
-	builder.WriteString(`		gin.SetMode(gin.ReleaseMode)
-	}
+func panicStringHandler(c *gin.Context, err string) {
+	c.JSON(http.StatusInternalServerError, gin.H{"err": err})
 }
 
 func main() {
-	engine := gin.Default()
-	gs.UseRouters(engine, GetRouter())
+	gs.SetGlobalPreffix("/api")
+	gs.AddGlobalMiddleware(gs.PackagePanicHandler(panicStringHandler))
 `)
 	if customConfig {
-		builder.WriteString(`	engine.Run(utils.Config.GetGinAddr())
+		builder.WriteString(`	gs.RunApp(&utils.Config)
 }
 `)
 	} else {
-		builder.WriteString(`	engine.Run(gs.Config.GetGinAddr())
+		builder.WriteString(`	gs.RunApp(&gs.Configuration{})
 }
 `)
 	}
 
 	return builder.String()
-}
-
-func GetRoutersGo(projectName string) string {
-	return fmt.Sprintf(`package main
-
-import (
-	"%s/demo"
-	"net/http"
-
-	"github.com/dan-kuroto/gin-stronger/gs"
-	"github.com/gin-gonic/gin"
-)
-
-func PanicStringHandler(c *gin.Context, err string) {
-	c.JSON(http.StatusInternalServerError, gin.H{"err": err})
-}
-
-func GetRouter() gs.Router {
-	return gs.Router{
-		Path: "/api",
-		MiddleWares: []gin.HandlerFunc{
-			gs.PackagePanicHandler(PanicStringHandler),
-		},
-		Children: []gs.Router{
-			demo.GetRouter(),
-		},
-	}
-}
-`, projectName)
 }
 
 func GetUtilsConfigGo(projectName string) string {
@@ -244,11 +204,22 @@ func GetDemoDemoGo(projectName string) string {
 
 import "github.com/dan-kuroto/gin-stronger/gs"
 
+func init() {
+	gs.UseController(&Controller)
+}
+`
+}
+
+func GetDemoControllerGo(projectName string) string {
+	return `package demo
+
+import "github.com/dan-kuroto/gin-stronger/gs"
+
 type controller struct{}
 
 var Controller controller
 
-func GetRouter() gs.Router {
+func (*controller) GetRouter() gs.Router {
 	return gs.Router{
 		Path: "/demo",
 		Children: []gs.Router{
@@ -260,11 +231,6 @@ func GetRouter() gs.Router {
 		},
 	}
 }
-`
-}
-
-func GetDemoControllerGo(projectName string) string {
-	return `package demo
 
 func (*controller) Hello(demo *DemoRequst) DemoResponse {
 	return DemoResponse{Message: "Hello~" + demo.Name}
