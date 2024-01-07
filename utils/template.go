@@ -1,12 +1,41 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
 
 const Version = "v1.2.2 Victory Knight"
 const ShortVersion = "v1.2.2"
+
+func GetGSJson(projectName string, customConfig bool) string {
+	var buildScript string
+	var runScript string
+	if IsWindows() {
+		buildScript = fmt.Sprintf(`go build -o target/%s.exe ./%s.go`, projectName, projectName)
+		runScript = fmt.Sprintf("./target/%s.exe", projectName)
+	} else {
+		buildScript = fmt.Sprintf(`go build -o target/%s %s.go`, projectName, projectName)
+		runScript = fmt.Sprintf("target/%s", projectName)
+	}
+	jsonData, err := json.MarshalIndent(map[string]any{
+		"name":       projectName,
+		"version":    "0.0.0",
+		"gs-version": ShortVersion,
+		"app": map[string]any{
+			"custom-config": customConfig,
+		},
+		"scripts": map[string]any{
+			"dev":   []string{buildScript, runScript},
+			"build": buildScript,
+		},
+	}, "", "  ")
+	if err != nil {
+		ThrowE(err)
+	}
+	return string(jsonData)
+}
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
