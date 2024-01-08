@@ -49,10 +49,6 @@ func Save(path string, data string) {
 	}
 }
 
-func isLineSeparator(r rune) bool {
-	return r == '\r' || r == '\n'
-}
-
 func Read(path string) string {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -77,12 +73,21 @@ func ReadConfig(path string) Config {
 func AddPackageToMainGo(projectName, mainPath, packageName string) {
 	lines := make([]string, 0, 8)
 	added := false
-	replacer := strings.NewReplacer("\n", "", "\r", "", " ", "", "\t", "")
-	for _, line := range strings.FieldsFunc(Read(mainPath), isLineSeparator) {
+	replacer := strings.NewReplacer(
+		"\t", "",
+		"\n", "",
+		"\v", "",
+		"\f", "",
+		"\r", "",
+		" ", "",
+		"\x85", "",
+		"\xA0", "",
+	)
+	for _, line := range strings.Split(Read(mainPath), "\n") {
 		lines = append(lines, line)
 		if !added && replacer.Replace(line) == "packagemain" {
 			added = true
-			lines = append(lines, fmt.Sprintf(`import _ %s/%s`, projectName, packageName))
+			lines = append(lines, "", fmt.Sprintf(`import _ "%s/%s"`, projectName, packageName))
 		}
 	}
 	Save(mainPath, strings.Join(lines, "\n"))
