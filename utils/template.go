@@ -10,25 +10,20 @@ const Version = "v1.2.2 Victory Knight"
 const ShortVersion = "v1.2.2"
 
 func GetGSJson(projectName string, customConfig bool) string {
-	var buildScript string
-	var runScript string
+	var target string
 	if IsWindows() {
-		buildScript = fmt.Sprintf(`go build -o target/%s.exe ./%s.go`, projectName, projectName)
-		runScript = fmt.Sprintf("./target/%s.exe", projectName)
+		target = fmt.Sprintf("./target/%s.exe", projectName)
 	} else {
-		buildScript = fmt.Sprintf(`go build -o target/%s %s.go`, projectName, projectName)
-		runScript = fmt.Sprintf("target/%s", projectName)
+		target = fmt.Sprintf("target/%s", projectName)
 	}
 	jsonData, err := json.MarshalIndent(map[string]any{
-		"name":       projectName,
-		"version":    "0.0.0",
 		"gs-version": ShortVersion,
 		"app": map[string]any{
+			"name":          projectName,
+			"version":       "0.0.0",
 			"custom-config": customConfig,
-		},
-		"scripts": map[string]any{
-			"dev":   []string{buildScript, runScript},
-			"build": buildScript,
+			"main":          []string{fmt.Sprintf(`%s.go`, projectName)},
+			"target":        target,
 		},
 	}, "", "  ")
 	if err != nil {
