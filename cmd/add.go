@@ -4,8 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/dan-kuroto/gs-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +13,20 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new package in gin-stronger application",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add called")
+		config := utils.ReadConfig("gs.json")
+		utils.AssertNotEmpty("app.name in gs.json", config.App.Name)
+		utils.AssertNotEmpty("app.main in gs.json", config.App.Main)
+		projectName := config.App.Name
+		mainPath := utils.GetPath(projectName, config.App.Main)
+		packageName := utils.Input("Package name:")
+		utils.AssertNotEmpty("package name", packageName)
+
+		utils.Mkdir(utils.GetPath(projectName, packageName))
+		utils.Save(utils.GetPath(projectName, packageName, packageName+".go"), utils.GetDemoInitGo(projectName, packageName))
+		utils.Save(utils.GetPath(projectName, packageName, "controller.go"), utils.GetDemoControllerGo(projectName, packageName))
+		utils.Save(utils.GetPath(projectName, packageName, "model.go"), utils.GetDemoModelGo(projectName, packageName))
+
+		utils.AddPackageToMainGo(projectName, mainPath, packageName)
 	},
 }
 

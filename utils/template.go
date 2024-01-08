@@ -16,14 +16,14 @@ func GetGSJson(projectName string, customConfig bool) string {
 	} else {
 		target = fmt.Sprintf("target/%s", projectName)
 	}
-	jsonData, err := json.MarshalIndent(map[string]any{
-		"gs-version": ShortVersion,
-		"app": map[string]any{
-			"name":          projectName,
-			"version":       "0.0.0",
-			"custom-config": customConfig,
-			"main":          []string{fmt.Sprintf(`%s.go`, projectName)},
-			"target":        target,
+	jsonData, err := json.MarshalIndent(Config{
+		GsVersion: ShortVersion,
+		App: AppConfig{
+			Name:         projectName,
+			Version:      "0.0.0",
+			CustomConfig: customConfig,
+			Main:         fmt.Sprintf(`%s.go`, projectName),
+			Target:       target,
 		},
 	}, "", "  ")
 	if err != nil {
