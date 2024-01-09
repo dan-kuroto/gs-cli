@@ -117,32 +117,6 @@ Done. Now run:
 `, projectName, runCmd)
 }
 
-func GetBuildRunScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go
-if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-}
-
-# run app
-./target/%s.exe
-`, projectName, projectName, projectName)
-	} else {
-		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go
-
-code=$?
-if [ $code -ne 0 ]; then
-    exit $code
-fi
-
-# run app
-target/%s
-`, projectName, projectName, projectName)
-	}
-}
-
 func GetMainGo(projectName string, customConfig bool) string {
 	var builder strings.Builder
 

@@ -26,8 +26,6 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
-		utils.Mkdir(utils.GetPath(projectName, "scripts"))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("buildrun")), utils.GetBuildRunScript(projectName))
 		utils.Save(utils.GetPath(projectName, projectName+".go"), utils.GetMainGo(projectName, customConfig))
 		if customConfig {
 			utils.Mkdir(utils.GetPath(projectName, "utils"))

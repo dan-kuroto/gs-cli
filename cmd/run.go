@@ -40,8 +40,36 @@ var runBuildCmd = &cobra.Command{
 	},
 }
 
+var runDevCmd = &cobra.Command{
+	Use:   "dev",
+	Short: "Compile gin-stronger application, and run it in development mode",
+	Run: func(cmd *cobra.Command, args []string) {
+		config := utils.ReadConfig("gs.json")
+		config.App.Main = strings.TrimSpace(config.App.Main)
+		utils.AssertNotEmpty("app.main in gs.json", config.App.Main)
+		config.App.Target = strings.TrimSpace(config.App.Target)
+		utils.AssertNotEmpty("app.target in gs.json", config.App.Target)
+
+		fmt.Printf("> go build -o %s %s\n", config.App.Target, config.App.Main)
+		buildCommand := exec.Command("go", "build", "-o", config.App.Target, config.App.Main)
+		buildCommand.Stdout = os.Stdout
+		buildCommand.Stderr = os.Stderr
+		if err := buildCommand.Run(); err != nil {
+			utils.ThrowE(err)
+		}
+		fmt.Println("Successfully built to", config.App.Target)
+
+		fmt.Printf("> %s\n", config.App.Target)
+		runCommand := exec.Command(config.App.Target)
+		runCommand.Stdout = os.Stdout
+		runCommand.Stderr = os.Stderr
+		runCommand.Run()
+	},
+}
+
 func init() {
 	runCmd.AddCommand(runBuildCmd)
+	runCmd.AddCommand(runDevCmd)
 
 	rootCmd.AddCommand(runCmd)
 
