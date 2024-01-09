@@ -28,9 +28,6 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
 		utils.Mkdir(utils.GetPath(projectName, "scripts"))
 		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("buildrun")), utils.GetBuildRunScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("build")), utils.GetBuildScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("rundev")), utils.GetRunDevScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("runrelease")), utils.GetRunReleaseScript(projectName))
 		utils.Save(utils.GetPath(projectName, projectName+".go"), utils.GetMainGo(projectName, customConfig))
 		if customConfig {
 			utils.Mkdir(utils.GetPath(projectName, "utils"))
@@ -41,7 +38,7 @@ var createCmd = &cobra.Command{
 		utils.Save(utils.GetPath(projectName, "demo", "controller.go"), utils.GetDemoControllerGo(projectName, "demo"))
 		utils.Save(utils.GetPath(projectName, "demo", "model.go"), utils.GetDemoModelGo(projectName, "demo"))
 
-		fmt.Print(utils.GetDoneMessage(projectName))
+		fmt.Print(utils.GetCreateDoneMessage(projectName))
 	},
 }
 

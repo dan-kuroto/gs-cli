@@ -102,7 +102,7 @@ go.work
 `
 }
 
-func GetDoneMessage(projectName string) string {
+func GetCreateDoneMessage(projectName string) string {
 	var runCmd string
 	if IsWindows() {
 		runCmd = "script/buildrun.ps1"
@@ -140,34 +140,6 @@ fi
 # run app
 target/%s
 `, projectName, projectName, projectName)
-	}
-}
-
-func GetBuildScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go
-`, projectName, projectName)
-	} else {
-		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go
-`, projectName, projectName)
-	}
-}
-
-func GetRunDevScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`./target/%s.exe`, projectName)
-	} else {
-		return fmt.Sprintf(`target/%s`, projectName)
-	}
-}
-
-func GetRunReleaseScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`./target/%s.exe --release`, projectName)
-	} else {
-		return fmt.Sprintf(`target/%s --release`, projectName)
 	}
 }
 
