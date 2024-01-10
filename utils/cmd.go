@@ -56,8 +56,9 @@ func WaitExecRun(config *Config) {
 	}
 }
 
-func KillProcess(command *exec.Cmd) {
+func WaitKillProcess(command *exec.Cmd) {
 	if err := command.Process.Kill(); err != nil {
 		ThrowE(err)
 	}
+	command.Wait()
 }

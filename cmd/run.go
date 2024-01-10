@@ -53,8 +53,7 @@ var runWatchCmd = &cobra.Command{
 				fmt.Println()
 				fmt.Println("File modification detected. Kill current process ...")
 
-				utils.KillProcess(command)
-				command.Wait()
+				utils.WaitKillProcess(command)
 
 				fmt.Println("Do recompile & restart ...")
 				fmt.Println()
