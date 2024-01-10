@@ -4,11 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-
 	"github.com/dan-kuroto/gs-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -24,19 +19,7 @@ var runBuildCmd = &cobra.Command{
 	Short: "Compile gin-stronger application",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
-		config.App.Main = strings.TrimSpace(config.App.Main)
-		utils.AssertNotEmpty("app.main in gs.json", config.App.Main)
-		config.App.Target = strings.TrimSpace(config.App.Target)
-		utils.AssertNotEmpty("app.target in gs.json", config.App.Target)
-
-		fmt.Printf("> go build -o %s %s\n", config.App.Target, config.App.Main)
-		command := exec.Command("go", "build", "-o", config.App.Target, config.App.Main)
-		command.Stdout = os.Stdout
-		command.Stderr = os.Stderr
-		if err := command.Run(); err != nil {
-			utils.ThrowE(err)
-		}
-		fmt.Println("Successfully built to", config.App.Target)
+		utils.ExecBuild(config)
 	},
 }
 
@@ -45,25 +28,8 @@ var runDevCmd = &cobra.Command{
 	Short: "Compile gin-stronger application, and run it in development mode",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
-		config.App.Main = strings.TrimSpace(config.App.Main)
-		utils.AssertNotEmpty("app.main in gs.json", config.App.Main)
-		config.App.Target = strings.TrimSpace(config.App.Target)
-		utils.AssertNotEmpty("app.target in gs.json", config.App.Target)
-
-		fmt.Printf("> go build -o %s %s\n", config.App.Target, config.App.Main)
-		buildCommand := exec.Command("go", "build", "-o", config.App.Target, config.App.Main)
-		buildCommand.Stdout = os.Stdout
-		buildCommand.Stderr = os.Stderr
-		if err := buildCommand.Run(); err != nil {
-			utils.ThrowE(err)
-		}
-		fmt.Println("Successfully built to", config.App.Target)
-
-		fmt.Printf("> %s\n", config.App.Target)
-		runCommand := exec.Command(config.App.Target)
-		runCommand.Stdout = os.Stdout
-		runCommand.Stderr = os.Stderr
-		runCommand.Run()
+		utils.ExecBuild(config)
+		utils.ExecRun(config)
 	},
 }
 
