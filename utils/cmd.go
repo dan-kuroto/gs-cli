@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func ExecBuild(config Config) {
+func ExecBuild(config *Config) *exec.Cmd {
 	config.App.Main = strings.TrimSpace(config.App.Main)
 	AssertNotEmpty("app.main in gs.json", config.App.Main)
 	config.App.Target = strings.TrimSpace(config.App.Target)
@@ -17,23 +17,47 @@ func ExecBuild(config Config) {
 	command := exec.Command("go", "build", "-o", config.App.Target, config.App.Main)
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
-	if err := command.Run(); err != nil {
+
+	if err := command.Start(); err != nil {
+		ThrowE(err)
+	}
+
+	return command
+}
+
+func WaitExecBuild(config *Config) {
+	if err := ExecBuild(config).Wait(); err != nil {
 		ThrowE(err)
 	}
 	fmt.Println("Successfully built to", config.App.Target)
 }
 
-func ExecRun(config Config) {
+func ExecRun(config *Config) *exec.Cmd {
 	config.App.Main = strings.TrimSpace(config.App.Main)
 	AssertNotEmpty("app.main in gs.json", config.App.Main)
 	config.App.Target = strings.TrimSpace(config.App.Target)
 	AssertNotEmpty("app.target in gs.json", config.App.Target)
 
 	fmt.Printf("> %s\n", config.App.Target)
-	runCommand := exec.Command(config.App.Target)
-	runCommand.Stdout = os.Stdout
-	runCommand.Stderr = os.Stderr
-	if err := runCommand.Run(); err != nil {
+	command := exec.Command(config.App.Target)
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+
+	if err := command.Start(); err != nil {
+		ThrowE(err)
+	}
+
+	return command
+}
+
+func WaitExecRun(config *Config) {
+	if err := ExecRun(config).Wait(); err != nil {
+		ThrowE(err)
+	}
+}
+
+func KillProcess(command *exec.Cmd) {
+	if err := command.Process.Kill(); err != nil {
 		ThrowE(err)
 	}
 }

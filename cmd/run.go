@@ -22,7 +22,8 @@ var runBuildCmd = &cobra.Command{
 	Short: "Compile application",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
-		utils.ExecBuild(config)
+
+		utils.WaitExecBuild(&config)
 	},
 }
 
@@ -31,8 +32,9 @@ var runDevCmd = &cobra.Command{
 	Short: "Compile application and run in dev mode",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
-		utils.ExecBuild(config)
-		utils.ExecRun(config)
+
+		utils.WaitExecBuild(&config)
+		utils.WaitExecRun(&config)
 	},
 }
 
@@ -41,14 +43,30 @@ var runWatchCmd = &cobra.Command{
 	Short: "Compile application and run in dev mode, then automatically redo when code is modified",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
-		go func() {
-			<-time.After(time.Second * 10)
-			fmt.Println("超时 ~")
-			// NOTE: 不过用os.Exit退出的话子进程关不掉
-			utils.ThrowS("主动结束")
-		}()
-		utils.ExecBuild(config)
-		utils.ExecRun(config)
+
+		modified := make(chan bool, 1)
+		utils.WaitExecBuild(&config)
+		command := utils.ExecRun(&config)
+		for {
+			select {
+			case <-modified:
+				fmt.Println()
+				fmt.Println("File modification detected. Kill current process ...")
+
+				utils.KillProcess(command)
+				command.Wait()
+
+				fmt.Println("Do recompile & restart ...")
+				fmt.Println()
+
+				utils.WaitExecBuild(&config)
+				command = utils.ExecRun(&config)
+			case <-time.After(500 * time.Millisecond):
+				if utils.CheckModified() {
+					modified <- true
+				}
+			}
+		}
 	},
 }
 

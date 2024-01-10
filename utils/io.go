@@ -122,3 +122,8 @@ func AssertNotEmpty(name string, value any) {
 		ThrowS("Unsupported type %T", value)
 	}
 }
+
+func CheckModified() bool {
+	// TODO: 实现文件修改检测
+	return false
+}
