@@ -103,18 +103,12 @@ go.work
 }
 
 func GetCreateDoneMessage(projectName string) string {
-	var runCmd string
-	if IsWindows() {
-		runCmd = "script/buildrun.ps1"
-	} else {
-		runCmd = "bash script/buildrun.sh"
-	}
 	return fmt.Sprintf(`
 Done. Now run:
   cd %s
   go mod tidy
-  %s
-`, projectName, runCmd)
+  gs-cli run dev
+`, projectName)
 }
 
 func GetMainGo(projectName string, customConfig bool) string {
