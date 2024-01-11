@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -100,7 +102,7 @@ func Mkdir(path string) {
 }
 
 func ThrowE(err error) {
-	fmt.Println(err.Error())
+	fmt.Println("error:", err.Error())
 	os.Exit(1)
 }
 
@@ -124,6 +126,33 @@ func AssertNotEmpty(name string, value any) {
 }
 
 func CheckModified() bool {
-	// TODO: 实现文件修改检测
+	fileInfo, err := os.Stat("main.go")
+	if err != nil {
+		ThrowE(err)
+	}
+	modTime := fileInfo.ModTime()
+	fmt.Printf("fileInfo.ModTime(): %v\n", modTime)
+	fmt.Printf("modTime.Format(time.RFC3339): %v\n", modTime.Format(time.RFC3339))
+	fmt.Printf("modTime.UnixMilli(): %v\n", modTime.UnixMilli())
+
+	if err := filepath.Walk(GetPath(), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			if info.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			fmt.Println("dir:", path)
+		} else {
+			fmt.Println("file:", path)
+		}
+
+		return nil
+	}); err != nil {
+		ThrowE(err)
+	}
+
 	return false
 }
