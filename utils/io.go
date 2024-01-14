@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type Config struct {
@@ -23,6 +23,8 @@ type AppConfig struct {
 	Main         string `json:"main"`
 	Target       string `json:"target"`
 }
+
+var path2ModStmpMs map[string]int64
 
 func Input(hint string) string {
 	var value string
@@ -126,33 +128,33 @@ func AssertNotEmpty(name string, value any) {
 }
 
 func CheckModified() bool {
-	fileInfo, err := os.Stat("main.go")
-	if err != nil {
-		ThrowE(err)
-	}
-	modTime := fileInfo.ModTime()
-	fmt.Printf("fileInfo.ModTime(): %v\n", modTime)
-	fmt.Printf("modTime.Format(time.RFC3339): %v\n", modTime.Format(time.RFC3339))
-	fmt.Printf("modTime.UnixMilli(): %v\n", modTime.UnixMilli())
+	neoPath2ModStmpMs := make(map[string]int64)
 
 	if err := filepath.Walk(GetPath(), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
+		name := info.Name()
 		if info.IsDir() {
-			if info.Name() == ".git" {
+			if name == ".git" {
 				return filepath.SkipDir
 			}
-			fmt.Println("dir:", path)
 		} else {
-			fmt.Println("file:", path)
+			// TODO: 忽略.gitignore/.txt/.md等文件，检查.go/.yml；最后可以放gs.json里
+			if name[len(name)-3:] != ".go" {
+				return nil
+			}
 		}
+		neoPath2ModStmpMs[path] = info.ModTime().UnixMilli()
 
 		return nil
 	}); err != nil {
 		ThrowE(err)
 	}
+	fmt.Println(neoPath2ModStmpMs)
 
-	return false
+	result := maps.Equal(neoPath2ModStmpMs, path2ModStmpMs)
+	path2ModStmpMs = neoPath2ModStmpMs
+	return result
 }
