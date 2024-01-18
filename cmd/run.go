@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/dan-kuroto/gs-cli/utils"
@@ -45,18 +46,19 @@ var runWatchCmd = &cobra.Command{
 		config := utils.ReadConfig("gs.json")
 
 		modified := make(chan bool, 1)
-		utils.WaitExecBuild(&config)
-		command := utils.ExecRun(&config)
+		var command *exec.Cmd
 		for {
 			select {
 			case <-modified:
-				fmt.Println()
-				fmt.Println("File modification detected. Kill current process ...")
+				if command != nil {
+					fmt.Println()
+					fmt.Println("File modification detected. Kill current process ...")
 
-				utils.WaitKillProcess(command)
+					utils.WaitKillProcess(command)
 
-				fmt.Println("Do recompile & restart ...")
-				fmt.Println()
+					fmt.Println("Do recompile & restart ...")
+					fmt.Println()
+				}
 
 				utils.WaitExecBuild(&config)
 				command = utils.ExecRun(&config)

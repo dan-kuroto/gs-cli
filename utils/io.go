@@ -136,25 +136,19 @@ func CheckModified() bool {
 		}
 
 		name := info.Name()
-		if info.IsDir() {
-			if name == ".git" {
-				return filepath.SkipDir
-			}
-		} else {
-			// TODO: 忽略.gitignore/.txt/.md等文件，检查.go/.yml；最后可以放gs.json里
-			if name[len(name)-3:] != ".go" {
-				return nil
-			}
+		if info.IsDir() && name == ".git" {
+			return filepath.SkipDir
 		}
-		neoPath2ModStmpMs[path] = info.ModTime().UnixMilli()
+		if !info.IsDir() && name[max(0, len(name)-3):] == ".go" {
+			neoPath2ModStmpMs[path] = info.ModTime().UnixMilli()
+		}
 
 		return nil
 	}); err != nil {
 		ThrowE(err)
 	}
-	fmt.Println(neoPath2ModStmpMs)
 
-	result := maps.Equal(neoPath2ModStmpMs, path2ModStmpMs)
+	result := !maps.Equal(neoPath2ModStmpMs, path2ModStmpMs)
 	path2ModStmpMs = neoPath2ModStmpMs
 	return result
 }
