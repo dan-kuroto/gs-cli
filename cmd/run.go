@@ -24,7 +24,9 @@ var runBuildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
 
-		utils.WaitExecBuild(&config)
+		if err := utils.WaitExecBuild(&config); err != nil {
+			utils.ThrowE(err)
+		}
 	},
 }
 
@@ -34,7 +36,9 @@ var runDevCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.ReadConfig("gs.json")
 
-		utils.WaitExecBuild(&config)
+		if err := utils.WaitExecBuild(&config); err != nil {
+			utils.ThrowE(err)
+		}
 		utils.WaitExecRun(&config)
 	},
 }
@@ -50,17 +54,20 @@ var runWatchCmd = &cobra.Command{
 		for {
 			select {
 			case <-modified:
-				if command != nil {
+				notFirst := command != nil
+				if notFirst {
 					fmt.Println()
-					fmt.Println("File modification detected. Kill current process ...")
-
+					fmt.Println("File modification has been detected. Do recompile ...")
+				}
+				if err := utils.WaitExecBuild(&config); err != nil {
+					utils.PrintE(err)
+					break
+				}
+				if notFirst {
+					fmt.Println("Kill current process and restart ...")
 					utils.WaitKillProcess(command)
-
-					fmt.Println("Do recompile & restart ...")
-					fmt.Println()
 				}
 
-				utils.WaitExecBuild(&config)
 				command = utils.ExecRun(&config)
 			case <-time.After(500 * time.Millisecond):
 				if utils.CheckModified() {

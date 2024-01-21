@@ -103,8 +103,12 @@ func Mkdir(path string) {
 	}
 }
 
-func ThrowE(err error) {
+func PrintE(err error) {
 	fmt.Println("error:", err.Error())
+}
+
+func ThrowE(err error) {
+	PrintE(err)
 	os.Exit(1)
 }
 
