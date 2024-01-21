@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-const Version = "v1.2.2 Victory Knight"
-const ShortVersion = "v1.2.2"
+const Version = "v1.2.3 Victory Knight"
+const ShortVersion = "v1.2.3"
 
 func GetGSJson(projectName string, customConfig bool) string {
 	var target string
