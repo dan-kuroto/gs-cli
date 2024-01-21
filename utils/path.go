@@ -18,11 +18,3 @@ func GetPath(paths ...string) string {
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
-
-func GetScriptName(name string) string {
-	if IsWindows() {
-		return name + ".ps1"
-	} else {
-		return name + ".sh"
-	}
-}

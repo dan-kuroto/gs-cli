@@ -21,26 +21,22 @@ var createCmd = &cobra.Command{
 		customConfig := strings.TrimSpace(utils.Input("Use custom configuration? [y/n]: ")) == "y"
 
 		utils.Mkdir(utils.GetPath(projectName))
+		utils.Save(utils.GetPath(projectName, "gs.json"), utils.GetGSJson(projectName, customConfig))
 		utils.Save(utils.GetPath(projectName, "banner.txt"), utils.GetBanner())
 		utils.Save(utils.GetPath(projectName, "go.mod"), utils.GetGoMod(projectName))
 		utils.Save(utils.GetPath(projectName, "application.yml"), utils.GetApplicationYml(customConfig))
 		utils.Save(utils.GetPath(projectName, ".gitignore"), utils.GetGitIgnore())
-		utils.Mkdir(utils.GetPath(projectName, "scripts"))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("buildrun")), utils.GetBuildRunScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("build")), utils.GetBuildScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("rundev")), utils.GetRunDevScript(projectName))
-		utils.Save(utils.GetPath(projectName, "scripts", utils.GetScriptName("runrelease")), utils.GetRunReleaseScript(projectName))
 		utils.Save(utils.GetPath(projectName, projectName+".go"), utils.GetMainGo(projectName, customConfig))
 		if customConfig {
 			utils.Mkdir(utils.GetPath(projectName, "utils"))
 			utils.Save(utils.GetPath(projectName, "utils", "config.go"), utils.GetUtilsConfigGo(projectName))
 		}
 		utils.Mkdir(utils.GetPath(projectName, "demo"))
-		utils.Save(utils.GetPath(projectName, "demo", "demo.go"), utils.GetDemoDemoGo(projectName))
-		utils.Save(utils.GetPath(projectName, "demo", "controller.go"), utils.GetDemoControllerGo(projectName))
-		utils.Save(utils.GetPath(projectName, "demo", "model.go"), utils.GetDemoModelGo(projectName))
+		utils.Save(utils.GetPath(projectName, "demo", "demo.go"), utils.GetDemoInitGo(projectName, "demo"))
+		utils.Save(utils.GetPath(projectName, "demo", "controller.go"), utils.GetDemoControllerGo(projectName, "demo"))
+		utils.Save(utils.GetPath(projectName, "demo", "model.go"), utils.GetDemoModelGo(projectName, "demo"))
 
-		fmt.Print(utils.GetDoneMessage(projectName))
+		fmt.Print(utils.GetCreateDoneMessage(projectName))
 	},
 }
 

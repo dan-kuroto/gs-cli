@@ -1,12 +1,36 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
 
-const Version = "v1.2.1 Victory Knight"
-const ShortVersion = "v1.2.1"
+const Version = "v1.2.2 Victory Knight"
+const ShortVersion = "v1.2.2"
+
+func GetGSJson(projectName string, customConfig bool) string {
+	var target string
+	if IsWindows() {
+		target = fmt.Sprintf("./target/%s.exe", projectName)
+	} else {
+		target = fmt.Sprintf("target/%s", projectName)
+	}
+	jsonData, err := json.MarshalIndent(Config{
+		GsVersion: ShortVersion,
+		App: AppConfig{
+			Name:         projectName,
+			Version:      "0.0.0",
+			CustomConfig: customConfig,
+			Main:         fmt.Sprintf(`%s.go`, projectName),
+			Target:       target,
+		},
+	}, "", "  ")
+	if err != nil {
+		ThrowE(err)
+	}
+	return string(jsonData)
+}
 
 func GetBanner() string {
 	return fmt.Sprintf(`   _____          _____ 
@@ -18,7 +42,7 @@ func GetBanner() string {
 `, Version)
 }
 
-func GetGoMod(packageName string) string {
+func GetGoMod(projectName string) string {
 	return fmt.Sprintf(`module %s
 
 go 1.21.0
@@ -26,7 +50,7 @@ go 1.21.0
 require (
 	github.com/dan-kuroto/gin-stronger %s
 	github.com/gin-gonic/gin v1.9.1
-)`, packageName, ShortVersion)
+)`, projectName, ShortVersion)
 }
 
 func GetApplicationYml(customConfig bool) string {
@@ -78,73 +102,13 @@ go.work
 `
 }
 
-func GetDoneMessage(projectName string) string {
-	var runCmd string
-	if IsWindows() {
-		runCmd = "script/buildrun.ps1"
-	} else {
-		runCmd = "bash script/buildrun.sh"
-	}
+func GetCreateDoneMessage(projectName string) string {
 	return fmt.Sprintf(`
 Done. Now run:
   cd %s
   go mod tidy
-  %s
-`, projectName, runCmd)
-}
-
-func GetBuildRunScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go
-if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-}
-
-# run app
-./target/%s.exe
-`, projectName, projectName, projectName)
-	} else {
-		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go
-
-code=$?
-if [ $code -ne 0 ]; then
-    exit $code
-fi
-
-# run app
-target/%s
-`, projectName, projectName, projectName)
-	}
-}
-
-func GetBuildScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`# build app
-go build -o target/%s.exe ./%s.go
-`, projectName, projectName)
-	} else {
-		return fmt.Sprintf(`# build app
-go build -o target/%s %s.go
-`, projectName, projectName)
-	}
-}
-
-func GetRunDevScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`./target/%s.exe`, projectName)
-	} else {
-		return fmt.Sprintf(`target/%s`, projectName)
-	}
-}
-
-func GetRunReleaseScript(projectName string) string {
-	if IsWindows() {
-		return fmt.Sprintf(`./target/%s.exe --release`, projectName)
-	} else {
-		return fmt.Sprintf(`target/%s --release`, projectName)
-	}
+  gs-cli run dev
+`, projectName)
 }
 
 func GetMainGo(projectName string, customConfig bool) string {
@@ -177,7 +141,7 @@ func main() {
 }
 `)
 	} else {
-		builder.WriteString(`	gs.RunApp(&gs.Configuration{})
+		builder.WriteString(`	gs.RunAppDefault()
 }
 `)
 	}
@@ -199,19 +163,19 @@ var Config Configuration
 `
 }
 
-func GetDemoDemoGo(projectName string) string {
-	return `package demo
+func GetDemoInitGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 import "github.com/dan-kuroto/gin-stronger/gs"
 
 func init() {
 	gs.UseController(&Controller)
 }
-`
+`, packageName)
 }
 
-func GetDemoControllerGo(projectName string) string {
-	return `package demo
+func GetDemoControllerGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 import "github.com/dan-kuroto/gin-stronger/gs"
 
@@ -221,7 +185,7 @@ var Controller controller
 
 func (*controller) GetRouter() gs.Router {
 	return gs.Router{
-		Path: "/demo",
+		Path: "/%s",
 		Children: []gs.Router{
 			{
 				Path:     "/hello",
@@ -235,18 +199,18 @@ func (*controller) GetRouter() gs.Router {
 func (*controller) Hello(demo *DemoRequst) DemoResponse {
 	return DemoResponse{Message: "Hello~" + demo.Name}
 }
-`
+`, packageName, packageName)
 }
 
-func GetDemoModelGo(projectName string) string {
-	return `package demo
+func GetDemoModelGo(projectName string, packageName string) string {
+	return fmt.Sprintf(`package %s
 
 type DemoRequst struct {
-	Name string ` + "`" + `form:"name"` + "`" + `
+	Name string `+"`"+`form:"name"`+"`"+`
 }
 
 type DemoResponse struct {
-	Message string ` + "`" + `json:"message"` + "`" + `
+	Message string `+"`"+`json:"message"`+"`"+`
 }
-`
+`, packageName)
 }
