@@ -16,11 +16,12 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Name         string `json:"name"`
-	Version      string `json:"version"`
-	CustomConfig bool   `json:"custom-config"`
-	Main         string `json:"main"`
-	Target       string `json:"target"`
+	Name         string              `json:"name"`
+	Version      string              `json:"version"`
+	CustomConfig bool                `json:"custom-config"`
+	Main         string              `json:"main"`
+	Target       string              `json:"target"`
+	Scripts      map[string][]string `json:"scripts"`
 }
 
 var path2ModStmpMs map[string]int64
@@ -60,12 +61,18 @@ func Read(path string) string {
 	return string(data)
 }
 
+func NewConfig() Config {
+	var config Config
+	config.App.Scripts = make(map[string][]string)
+	return config
+}
+
 func ReadConfig(path string) Config {
 	jsonData, err := os.ReadFile(path)
 	if err != nil {
 		ThrowE(err)
 	}
-	var config Config
+	config := NewConfig()
 	err = json.Unmarshal(jsonData, &config)
 	if err != nil {
 		ThrowE(err)
