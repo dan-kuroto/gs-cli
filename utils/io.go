@@ -8,7 +8,6 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Config struct {
@@ -72,29 +71,6 @@ func ReadConfig(path string) Config {
 		ThrowE(err)
 	}
 	return config
-}
-
-func AddPackageToMainGo(projectName, mainPath, packageName string) {
-	lines := make([]string, 0, 8)
-	added := false
-	replacer := strings.NewReplacer(
-		"\t", "",
-		"\n", "",
-		"\v", "",
-		"\f", "",
-		"\r", "",
-		" ", "",
-		"\x85", "",
-		"\xA0", "",
-	)
-	for _, line := range strings.Split(Read(mainPath), "\n") {
-		lines = append(lines, line)
-		if !added && replacer.Replace(line) == "packagemain" {
-			added = true
-			lines = append(lines, "", fmt.Sprintf(`import _ "%s/%s"`, projectName, packageName))
-		}
-	}
-	Save(mainPath, strings.Join(lines, "\n"))
 }
 
 func Mkdir(path string) {

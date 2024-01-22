@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/dan-kuroto/gs-cli/utils"
@@ -31,7 +32,8 @@ var addCmd = &cobra.Command{
 		utils.Save(utils.GetPath(packageName, "controller.go"), utils.GetDemoControllerGo(projectName, packageName))
 		utils.Save(utils.GetPath(packageName, "model.go"), utils.GetDemoModelGo(projectName, packageName))
 
-		utils.AddPackageToMainGo(projectName, mainPath, packageName)
+		newImport := fmt.Sprintf("%s/%s", projectName, packageName)
+		utils.Save(mainPath, utils.AddImport(mainPath, newImport))
 	},
 }
 
