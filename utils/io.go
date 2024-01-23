@@ -28,6 +28,7 @@ type AppConfig struct {
 }
 
 var path2Md5 map[string]string
+var suffixesToCheck = []string{".go", ".yml"}
 
 func Input(hint string) string {
 	var value string
@@ -145,7 +146,7 @@ func CheckModified() bool {
 		if info.IsDir() && name == ".git" {
 			return filepath.SkipDir
 		}
-		if !info.IsDir() && name[max(0, len(name)-3):] == ".go" {
+		if !info.IsDir() && HasAnySuffix(name, suffixesToCheck...) {
 			if md5Str, err := CalcMd5(path); err != nil {
 				ThrowE(err)
 			} else {
