@@ -31,7 +31,6 @@ var runCmd = &cobra.Command{
 		}
 
 		fmt.Printf("> %s\n", strings.Join(script, " "))
-		// TODO: 一部分命令(ls/pwd/...)不支持，报错说path不存在...
 		command := exec.Command(script[0], script[1:]...)
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr

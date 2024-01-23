@@ -2,8 +2,11 @@ package utils
 
 import (
 	"bufio"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"maps"
 	"os"
@@ -24,7 +27,7 @@ type AppConfig struct {
 	Scripts      map[string][]string `json:"scripts"`
 }
 
-var path2ModStmpMs map[string]int64
+var path2Md5 map[string]string
 
 func Input(hint string) string {
 	var value string
@@ -114,8 +117,24 @@ func AssertNotEmpty(name string, value any) {
 	}
 }
 
+func CalcMd5(fpath string) (string, error) {
+	file, err := os.Open(fpath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	md5Bytes := hash.Sum(nil)
+
+	return hex.EncodeToString(md5Bytes), nil
+}
+
 func CheckModified() bool {
-	neoPath2ModStmpMs := make(map[string]int64)
+	neoPath2Md5 := make(map[string]string)
 
 	if err := filepath.Walk(GetPath(), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -127,7 +146,11 @@ func CheckModified() bool {
 			return filepath.SkipDir
 		}
 		if !info.IsDir() && name[max(0, len(name)-3):] == ".go" {
-			neoPath2ModStmpMs[path] = info.ModTime().UnixMilli()
+			if md5Str, err := CalcMd5(path); err != nil {
+				ThrowE(err)
+			} else {
+				neoPath2Md5[path] = md5Str
+			}
 		}
 
 		return nil
@@ -135,7 +158,7 @@ func CheckModified() bool {
 		ThrowE(err)
 	}
 
-	result := !maps.Equal(neoPath2ModStmpMs, path2ModStmpMs)
-	path2ModStmpMs = neoPath2ModStmpMs
+	result := !maps.Equal(neoPath2Md5, path2Md5)
+	path2Md5 = neoPath2Md5
 	return result
 }
