@@ -1,13 +1,31 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
+	"text/template"
+
+	"github.com/dan-kuroto/gs-cli/tpl"
 )
 
 const Version = "v1.2.3 Victory Knight"
 const ShortVersion = "v1.2.3"
+
+func templateExec(tplStr string, data any) string {
+	tmpl, err := template.New("").Parse(tplStr)
+	if err != nil {
+		ThrowE(err)
+	}
+
+	var buffer bytes.Buffer
+	err = tmpl.Execute(&buffer, data)
+	if err != nil {
+		ThrowE(err)
+	}
+	return buffer.String()
+}
 
 func GetGSJson(projectName string, customConfig bool) string {
 	var target string
@@ -33,13 +51,9 @@ func GetGSJson(projectName string, customConfig bool) string {
 }
 
 func GetBanner() string {
-	return fmt.Sprintf(`   _____          _____ 
-  / ____|        / ____|
- | |  __   ___  | (___  
- | | |_ | |___|  \___ \   こんしや～💫
- | |__| |        ____) |
-  \_____|       |_____/   %s
-`, Version)
+	return templateExec(tpl.BannerTxt, map[string]any{
+		"version": Version,
+	})
 }
 
 func GetGoMod(projectName string) string {
