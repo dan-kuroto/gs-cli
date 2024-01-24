@@ -28,7 +28,7 @@ var addCmd = &cobra.Command{
 		utils.AssertNotEmpty("package name", packageName)
 
 		utils.Mkdir(utils.GetPath(packageName))
-		utils.Save(utils.GetPath(packageName, packageName+".go"), utils.GetDemoInitGo(projectName, packageName))
+		utils.Save(utils.GetPath(packageName, packageName+".go"), utils.GetDemoDemoGo(projectName, packageName))
 		utils.Save(utils.GetPath(packageName, "controller.go"), utils.GetDemoControllerGo(projectName, packageName))
 		utils.Save(utils.GetPath(packageName, "model.go"), utils.GetDemoModelGo(projectName, packageName))
 
