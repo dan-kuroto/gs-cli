@@ -2,13 +2,15 @@ package utils
 
 import (
 	"bufio"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Config struct {
@@ -17,14 +19,16 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Name         string `json:"name"`
-	Version      string `json:"version"`
-	CustomConfig bool   `json:"custom-config"`
-	Main         string `json:"main"`
-	Target       string `json:"target"`
+	Name         string              `json:"name"`
+	Version      string              `json:"version"`
+	CustomConfig bool                `json:"custom-config"`
+	Main         string              `json:"main"`
+	Target       string              `json:"target"`
+	Scripts      map[string][]string `json:"scripts"`
 }
 
-var path2ModStmpMs map[string]int64
+var path2Md5 map[string]string
+var suffixesToCheck = []string{".go", ".yml"}
 
 func Input(hint string) string {
 	var value string
@@ -61,40 +65,23 @@ func Read(path string) string {
 	return string(data)
 }
 
+func NewConfig() Config {
+	var config Config
+	config.App.Scripts = make(map[string][]string)
+	return config
+}
+
 func ReadConfig(path string) Config {
 	jsonData, err := os.ReadFile(path)
 	if err != nil {
 		ThrowE(err)
 	}
-	var config Config
+	config := NewConfig()
 	err = json.Unmarshal(jsonData, &config)
 	if err != nil {
 		ThrowE(err)
 	}
 	return config
-}
-
-func AddPackageToMainGo(projectName, mainPath, packageName string) {
-	lines := make([]string, 0, 8)
-	added := false
-	replacer := strings.NewReplacer(
-		"\t", "",
-		"\n", "",
-		"\v", "",
-		"\f", "",
-		"\r", "",
-		" ", "",
-		"\x85", "",
-		"\xA0", "",
-	)
-	for _, line := range strings.Split(Read(mainPath), "\n") {
-		lines = append(lines, line)
-		if !added && replacer.Replace(line) == "packagemain" {
-			added = true
-			lines = append(lines, "", fmt.Sprintf(`import _ "%s/%s"`, projectName, packageName))
-		}
-	}
-	Save(mainPath, strings.Join(lines, "\n"))
 }
 
 func Mkdir(path string) {
@@ -131,8 +118,24 @@ func AssertNotEmpty(name string, value any) {
 	}
 }
 
+func CalcMd5(fpath string) (string, error) {
+	file, err := os.Open(fpath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	md5Bytes := hash.Sum(nil)
+
+	return hex.EncodeToString(md5Bytes), nil
+}
+
 func CheckModified() bool {
-	neoPath2ModStmpMs := make(map[string]int64)
+	neoPath2Md5 := make(map[string]string)
 
 	if err := filepath.Walk(GetPath(), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -143,8 +146,12 @@ func CheckModified() bool {
 		if info.IsDir() && name == ".git" {
 			return filepath.SkipDir
 		}
-		if !info.IsDir() && name[max(0, len(name)-3):] == ".go" {
-			neoPath2ModStmpMs[path] = info.ModTime().UnixMilli()
+		if !info.IsDir() && HasAnySuffix(name, suffixesToCheck...) {
+			if md5Str, err := CalcMd5(path); err != nil {
+				ThrowE(err)
+			} else {
+				neoPath2Md5[path] = md5Str
+			}
 		}
 
 		return nil
@@ -152,7 +159,7 @@ func CheckModified() bool {
 		ThrowE(err)
 	}
 
-	result := !maps.Equal(neoPath2ModStmpMs, path2ModStmpMs)
-	path2ModStmpMs = neoPath2ModStmpMs
+	result := !maps.Equal(neoPath2Md5, path2Md5)
+	path2Md5 = neoPath2Md5
 	return result
 }

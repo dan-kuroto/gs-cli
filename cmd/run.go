@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/dan-kuroto/gs-cli/utils"
@@ -16,6 +18,29 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Execute some shortcut commands",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			utils.ThrowS("Please specify the command to execute")
+		}
+		cmdName := args[0]
+
+		config := utils.ReadConfig("gs.json")
+		script, ok := config.App.Scripts[cmdName]
+		if !ok {
+			utils.ThrowS(fmt.Sprintf("Command '%s' not found", cmdName))
+		}
+
+		fmt.Printf("> %s\n", strings.Join(script, " "))
+		command := exec.Command(script[0], script[1:]...)
+		command.Stdout = os.Stdout
+		command.Stderr = os.Stderr
+		if err := command.Start(); err != nil {
+			utils.ThrowE(err)
+		}
+		if err := command.Wait(); err != nil {
+			utils.ThrowE(err)
+		}
+	},
 }
 
 var runBuildCmd = &cobra.Command{
